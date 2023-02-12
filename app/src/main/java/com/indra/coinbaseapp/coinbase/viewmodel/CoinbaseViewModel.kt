@@ -8,8 +8,9 @@ import com.indra.coinbaseapp.comm.request.TickerRequest
 import com.tinder.scarlet.WebSocket
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import javax.inject.Inject
 
-class CoinbaseViewModel constructor(
+class CoinbaseViewModel @Inject constructor(
     private val coinbaseService: CoinbaseService
 ): ViewModel() {
     private var disposables: CompositeDisposable = CompositeDisposable()

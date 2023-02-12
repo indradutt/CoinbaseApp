@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.indra.coinbaseapp.CoinbaseApp
 import com.indra.coinbaseapp.coinbase.viewmodel.CoinbaseViewModel
-import com.indra.coinbaseapp.comm.CoinbaseService
 import com.indra.coinbaseapp.databinding.ActivityMainBinding
 import javax.inject.Inject
 
@@ -12,7 +11,7 @@ class CoinbaseActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     @Inject
-    lateinit var coinbaseService: CoinbaseService
+    lateinit var coinbaseViewModel: CoinbaseViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,7 +22,6 @@ class CoinbaseActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        val viewModel = CoinbaseViewModel(coinbaseService)
-        viewModel.connect()
+        coinbaseViewModel.connect()
     }
 }

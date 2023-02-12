@@ -1,6 +1,7 @@
 package com.indra.coinbaseapp.di
 
 import android.app.Application
+import com.indra.coinbaseapp.coinbase.viewmodel.CoinbaseViewModel
 import com.indra.coinbaseapp.comm.CoinbaseService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -66,4 +67,10 @@ class AppModule {
     @Provides
     @AppScope
     fun provideCoinbaseService(scarlet: Scarlet) = scarlet.create<CoinbaseService>()
+
+    @Provides
+    @AppScope
+    fun provideViewModel(coinbaseService: CoinbaseService): CoinbaseViewModel {
+        return CoinbaseViewModel(coinbaseService)
+    }
 }
