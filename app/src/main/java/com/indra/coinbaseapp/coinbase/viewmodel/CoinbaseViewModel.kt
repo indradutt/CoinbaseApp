@@ -1,6 +1,8 @@
 package com.indra.coinbaseapp.coinbase.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.indra.coinbaseapp.comm.CoinbaseService
 import com.indra.coinbaseapp.comm.request.SubscribeAction
@@ -8,53 +10,49 @@ import com.indra.coinbaseapp.comm.request.TickerRequest
 import com.tinder.scarlet.WebSocket
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import javax.inject.Inject
 
 class CoinbaseViewModel @Inject constructor(
     private val coinbaseService: CoinbaseService
 ): ViewModel() {
-    private var disposables: CompositeDisposable = CompositeDisposable()
+    private val _viewEvents = MutableLiveData<WebSocket.Event>()
+    val viewEvents: LiveData<WebSocket.Event> = _viewEvents
 
-    private var ticker: CompositeDisposable = CompositeDisposable()
+    private val _viewState = MutableLiveData<CoinbaseViewState>()
+    val viewState: LiveData<CoinbaseViewState> = _viewState
 
-    fun connect() {
+    private val compositeDisposable = CompositeDisposable()
+
+    init {
         coinbaseService.observeWebSocketEvent()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 when(it) {
                     is WebSocket.Event.OnConnectionOpened<*> -> {
-                        Log.i("BitCoin", "OnConnectionOpened")
                         subscribe()
-                    }
-                    is WebSocket.Event.OnConnectionFailed -> {
-                        Log.w("BitCoin", "connection failed")
-                    }
-                    is WebSocket.Event.OnConnectionClosed -> {
-                        Log.d("BitCoin", "connection closed")
-                    }
-                    is WebSocket.Event.OnMessageReceived -> {
-                        Log.i("BitCoin", "OnMessageReceived")
+                        _viewEvents.value = it
                     }
                     else -> {
-                        Log.e("BitCoin", "some other error")
+                        _viewEvents.value = it
                     }
                 }
             }, {
                 Log.e("BitCoin", "connection error = ${it.cause}")
+                _viewEvents.value = WebSocket.Event.OnConnectionFailed(it)
             }).also {
-                disposables.add(it)
+                it.addTo(compositeDisposable)
             }
 
         coinbaseService.observeTicker()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
-                Log.i("BitCoin", "price = ${it.price}")
+                _viewState.value = CoinbaseViewState(it.price)
             }, { error ->
-                Log.e("BitCoin", "error = ${error.cause}")
+                _viewEvents.value = WebSocket.Event.OnConnectionFailed(error)
             }).also {
-                ticker.add(it)
+                it.addTo(compositeDisposable)
             }
-
     }
 
     private fun subscribe() {
